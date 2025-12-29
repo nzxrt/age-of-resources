@@ -1,4 +1,3 @@
-
 import time
 from lists import *
 from data import *
@@ -93,49 +92,6 @@ def buy_resource(): #функция покупки ресурсов
 
     except ValueError:
         print("Ошибка: Введите число")
-
-def country_select(): #функция выбора страны
-    print("Старт.")
-    time.sleep(1)
-    print("Старт..")
-    time.sleep(1)
-    print("Старт...")
-    print("Игра начата")
-    print("Сейчас вам будут предложены страны для выбора: ")
-    print("     - США  - 1")
-    print("     - СССР   - 2")
-    print("     - Китай   - 3")
-    print("     - Великобритания   - 4")
-    print("     - Франция   - 5")
-    print("     - ФРГ   - 6")          # Федеративная Республика Германии (Западная Германия)
-    print("     - ГДР   - 7")          # Германская Демократическая Республика (Восточная Германия)
-    print("     - Япония   - 8")
-    print("     - Италия   - 9")
-    print("     - Польша   - 10")
-    print("     - Чехословакия   - 11")
-    print("     - Югославия   - 12")
-    print("     - Румыния   - 13")
-    print("     - Венгрия   - 14")
-    print("     - Куба   - 15")
-    print("     - Индия   - 16")
-    print("     - Египет   - 17")
-    print("     - Израиль   - 18")
-    print("     - Турция   - 19")
-    print("     - Канада   - 20")
-    command = int(input("Введите цифру для выбора -> "))
-    countries = [
-        "США", "СССР", "Китай", "Великобританию", "Францию", "ФРГ", "ГДР", "Японию",
-        "Италию", "Польшу", "Чехословакию", "Югославию", "Румынию", "Венгрию", "Кубу",
-        "Индию", "Египет", "Израиль", "Турцию", "Канаду"
-    ]
-
-    if 1 <= command <= 20:
-        print(f"Вы выбрали {countries[command - 1]}")
-        a = 0
-        time.sleep(1)
-        a += 1
-    else:
-        print("Неверный выбор страны.")
 
 def farming(): #функция высаживания культуры
     where_set = input("Куда вы хотите высадить? (Ферма, Равнина, Поле) -> ")
@@ -250,5 +206,10 @@ def show_war():
     print(in_war)
 
 def logistic():
-    action = input()
-    if action == 
+    action1 = input("Что вы хотите отправить? -> ")
+    action2 = input("Выберите страну в которую вы хотите доставить -> ")
+    if action1 in inventory and action2 in country:
+        print(f"Вы отправили {action1} в {action2}")
+        inventory.remove(action1)
+    else:
+        print(f"Вы не можете отправить {action1} в {action2}")

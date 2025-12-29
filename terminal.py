@@ -59,9 +59,11 @@ while True:
                 print(f"Ваше хранилище {inventory}")
             else:
                 print("Ваше хранилище пусто")
+        elif command == ";logistic":
+            logistic()
                 
     
-    except EOFError: # Обработка закрытия ввода (например, Ctrl+Z или Ctrl+D)
+    except EOFError:
         print("Выход из игры...")
         break
     except Exception as e:
