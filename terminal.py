@@ -1,29 +1,26 @@
-import function
-from lists import *
-from inventory import *
-from random import randint
-from random_1 import sell_or_not
-from function import *
-from data import *
-
-
-# Глобальные переменные
-balance = 15000
-
+"""Консольный режим игры. Запуск: python terminal.py"""
+from function import (
+    sell_resource, buy_resource, zone, government,
+    war, show_war, end_war, logistic, country_select,
+    form_alliance, break_alliance, farming, discover, production_start,
+)
+from data import balance, inventory, country
 
 # Основной игровой цикл (консольный)
 while True:
     try:
-        command = input('-> ')
+        command = input('-> ').strip()
 
         if command == ";help":
-            print("HELP: Для продажи ресурса напишите ;sell")
-            print("HELP: Для покупки ресурса напишите ;buy")
-            print("HELP: Для просмотра баланса напишите ;balance")
-            print("HELP: Для просмотра инвентаря напишите ;resources_inv")
-            print("HELP: Для получения информации о стране напишите ;countryinfo")
-            print("HELP: Для выбора страны напишите ;country_select")
-            print("HELP: Для выхода из игры напишите ;exit")
+            print(";sell - продать ресурс  ;buy - купить ресурс")
+            print(";balance - баланс  ;inventory - инвентарь")
+            print(";zone - зоны  ;government - правительство")
+            print(";war - объявить войну  ;show_war - текущие войны  ;end_war - заключить мир")
+            print(";alliance - заключить союз  ;break_alliance - расторгнуть союз")
+            print(";country_select - выбор страны  ;countryinfo - список стран")
+            print(";farming - фермерство  ;discover - изучить ресурс")
+            print(";logistic - отправить груз  ;production - производство")
+            print(";exit - выход")
 
         elif command == ";exit":
             print("Выход из игры...")
@@ -35,10 +32,13 @@ while True:
             buy_resource()
         elif command == ";balance":
             print(f"Ваш баланс: {balance}")
-        elif command == ";countryinfo":
-            print(f"Все доступные страны: {', '.join(country)}")
-            print("Чтобы посмотреть информацию об определённой стране, напишите: ;info <имя_страны>")
-        elif command == ";zone": # Добавляем вызов функций
+        elif command == ";inventory":
+            if inventory:
+                for k, v in inventory.items():
+                    print(f"  {k}: {v} кг")
+            else:
+                print("Инвентарь пуст")
+        elif command == ";zone":
             zone()
         elif command == ";government":
             government()
@@ -46,25 +46,29 @@ while True:
             war()
         elif command == ";show_war":
             show_war()
+        elif command == ";end_war":
+            end_war()
+        elif command == ";alliance":
+            form_alliance()
+        elif command == ";break_alliance":
+            break_alliance()
         elif command == ";country_select":
             country_select()
-
-        else:
-            print(f"Неизвестная команда: {command}. Напишите ;help для справки.")
-        if command == ";show_war":
-            show_war()
-        if command == ";inventory":
-            elemets = len(inventory)
-            if elemets > 1:
-                print(f"Ваше хранилище {inventory}")
-            else:
-                print("Ваше хранилище пусто")
+        elif command == ";countryinfo":
+            print(f"Страны: {', '.join(country)}")
+        elif command == ";farming":
+            farming()
+        elif command == ";discover":
+            discover()
         elif command == ";logistic":
             logistic()
-                
-    
+        elif command == ";production":
+            production_start()
+        else:
+            print(f"Неизвестная команда: {command}. ;help для справки.")
+
     except EOFError:
         print("Выход из игры...")
         break
     except Exception as e:
-        print(f"Ошибка при обработке команды: {e}")
+        print(f"Ошибка: {e}")

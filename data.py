@@ -1,23 +1,40 @@
+"""Единый источник игровых данных."""
 from tabulate import tabulate
 
-def table_of_country(): #функция которая будет отображать информацию о выбранной старне, пример в expirement
-    pass
+# Баланс и инвентарь — управляются через game_state, здесь только начальные значения
 balance = 15000
 inventory = {}
 
 farm_zone = ["Равнина", "Поле", "Ферма"]
-available_farm_zone = [] #добавлять по мере изучения
+available_farm_zone = ["Равнина", "Поле"]  # по мере изучения добавлять
 culture_for_farm = ["Пшеница", "Морковь", "Картофель"]
-available_culture_for_farm = [] #добавлять по мере изучения
-zone = ["Горы", "Равнина", "Поле", "Лес", "Море"]
+available_culture_for_farm = ["Пшеница", "Морковь", "Картофель"]
+zones = ["Горы", "Равнина", "Поле", "Лес", "Море"]
 resources = ["Камень", "Железная руда", "Уголь", "Дерево", "Песок"]
-laws = [] #Законы
-may_laws = []
 
-regions = [] #Регионы
-invest = [] #инвестиции
-production = [] #производство
-available_production = [] #добавлять по мере изучения
-prodused_on_production = [] #добавлять по мере производства
-in_war = []#с кем война
-inventory = []#инвентарь
+laws = []
+may_laws = []
+regions = {"север": "Северный регион", "юг": "Южный регион", "восток": "Восточный регион"}
+invest = []
+production = {"завод": "Завод металлов", "фабрика": "Текстильная фабрика"}
+alliances = []
+available_production = ["Металл", "Ткань"]
+prodused_on_production = []
+in_war = []
+
+# Ресурсы для торговли (англ. названия для совместимости)
+available_resources_for_sell = ["Coal", "Iron", "Stone", "Wood", "Wheat", "Carrot", "Potato"]
+available_resources_for_buy = ["Coal", "Iron", "Stone", "Wood", "Wheat", "Carrot", "Potato"]
+Coal_coast = 50
+Iron_coast = 120
+Stone_coast = 30
+Wood_coast = 40
+country = ["Россия", "США", "Китай", "Германия", "Франция"]
+
+
+def table_of_country(countries_data: list) -> str:
+    """Отображает информацию о странах в виде таблицы."""
+    if not countries_data:
+        return "Нет данных"
+    headers = ["Страна", "Территории", "Баланс", "Альянсы", "Войны"]
+    return tabulate(countries_data, headers=headers, tablefmt="grid")

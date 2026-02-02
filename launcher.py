@@ -136,7 +136,7 @@ def download_and_extract_release(zipball_url, extract_to_dir="."):
             shutil.rmtree(temp_extract_path) # Гарантируем удаление временной директории для распаковки
     return False
 
-def launch_game(game_script="terminal.py"):
+def launch_game(game_script="main_game.py"):
     action = input("Вы хотите запустить игру? (y/n) -> ")
     if action == "y":
         print(f"Запуск игру: {game_script}")
