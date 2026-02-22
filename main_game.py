@@ -1,8 +1,3 @@
-"""
-Главный файл игры. Запуск: python main_game.py
-Интегрирует карту, выбор сектора мышкой, торговлю, захват, шахты/грядки, войну/союзы.
-Всё управление — клавиатура, без терминала.
-"""
 import os
 import random
 import pygame
@@ -12,7 +7,6 @@ from game_state import (
     MINE_BIOMES, BED_BIOMES,
 )
 
-# Разрешение
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 MAP_WIDTH = 10
@@ -32,7 +26,6 @@ COLORS = {
 
 
 def load_texture(path, default_size=(32, 32)):
-    """Загрузка текстуры с fallback."""
     base = os.path.dirname(os.path.abspath(__file__))
     full = os.path.join(base, path)
     if os.path.exists(full):
@@ -45,7 +38,6 @@ def load_texture(path, default_size=(32, 32)):
 
 
 def get_territory_at_pos(mouse_x, mouse_y, grid_start_x, grid_start_y, territory_size, map_width, map_height):
-    """Определяет сектор по координатам мыши."""
     rx = mouse_x - grid_start_x
     ry = mouse_y - grid_start_y
     if rx < 0 or ry < 0:
@@ -66,10 +58,8 @@ def run_game():
     font_large = pygame.font.Font(None, 28)
     clock = pygame.time.Clock()
 
-    # Карта
     game_map = create_map_for_player(MAP_WIDTH, MAP_HEIGHT)
 
-    # AI страны и их стартовые секторы (не море)
     ai_config = [
         ("bot_0", "Северная Империя", [1, 2]),
         ("bot_1", "Южная Лига", [MAP_WIDTH * (MAP_HEIGHT - 2), MAP_WIDTH * (MAP_HEIGHT - 2) + 1]),
@@ -87,23 +77,20 @@ def run_game():
                 if t and (not t.custom_data or t.custom_data.get("biome") != "Море"):
                     c.add_territory(sid, game_map)
 
-    # Фон
     try:
         bg = pygame.image.load("textures/maps/evu.jpg")
     except pygame.error:
         bg = None
 
-    # Режим ввода имени
-    input_mode = "start"  # "start" | "name" | "game"
+    input_mode = "start"
     country_name_input = ""
     message_log = []
     selected_sector_id = None
 
-    # Меню (клавиатурное управление)
-    menu_mode = None      # "trade" | "war" | "alliance"
+    menu_mode = None
     menu_index = 0
-    menu_sub = "main"     # подменю
-    menu_data = []        # данные для выбора
+    menu_sub = "main"
+    menu_data = []
     trade_qty = 1
     trade_price = 50
     trade_selected_res = None
@@ -151,7 +138,7 @@ def run_game():
     def handle_trade_confirm():
         nonlocal menu_mode, menu_sub, menu_index, menu_data, trade_qty, trade_price, trade_selected_res
         if menu_sub == "main":
-            if menu_index == 0:  # Продать
+            if menu_index == 0:
                 inv = [(r, q) for r, q in gs.player_country.inventory.items() if q > 0]
                 if not inv:
                     add_msg("Нет ресурсов для продажи.")
@@ -160,7 +147,7 @@ def run_game():
                 menu_data = [f"{r}: {q} шт" for r, q in inv]
                 menu_sub = "sell_res"
                 menu_index = 0
-            elif menu_index == 1:  # Купить
+            elif menu_index == 1:
                 menu_data = RESOURCES_LIST + ["Назад"]
                 menu_sub = "buy_res"
                 menu_index = 0
@@ -269,7 +256,6 @@ def run_game():
         screen.blit(surf, (SCREEN_WIDTH // 2 - 250, SCREEN_HEIGHT // 2 - 210))
 
     def draw_panel():
-        """Панель действий справа."""
         x = SCREEN_WIDTH - RIGHT_PADDING + 10
         y = 20
         pygame.draw.rect(screen, (40, 40, 50), (SCREEN_WIDTH - RIGHT_PADDING, 0, RIGHT_PADDING, SCREEN_HEIGHT))
@@ -282,7 +268,6 @@ def run_game():
             screen.blit(txt, (x, y))
             return
 
-        # Инфо игрока
         txt = font_large.render(f"{gs.player_country.name}", True, (0, 255, 150))
         screen.blit(txt, (x, y))
         y += 28
@@ -308,7 +293,6 @@ def run_game():
                 screen.blit(txt, (x, y))
                 y += 30
 
-                # Кнопки действий
                 if t.owner == PLAYER_ID:
                     if not t.custom_data or not t.custom_data.get("building"):
                         if biome in MINE_BIOMES:
@@ -344,7 +328,6 @@ def run_game():
         txt = font.render("[A] Союзы", True, (200, 200, 255))
         screen.blit(txt, (x, y))
 
-        # Лог
         y = SCREEN_HEIGHT - 120
         for m in message_log[-3:]:
             txt = font.render(m[:45], True, (180, 220, 180))
@@ -426,7 +409,6 @@ def run_game():
 
                 elif input_mode == "game" and gs.game_started:
                     if menu_mode:
-                        # Обработка меню
                         if event.key == pygame.K_ESCAPE:
                             if menu_sub == "main":
                                 menu_mode = None
@@ -487,7 +469,6 @@ def run_game():
             draw_menu_overlay()
 
         if input_mode == "name":
-            # Оверлей ввода имени
             overlay = pygame.Surface((400, 80))
             overlay.fill((30, 40, 50))
             pygame.draw.rect(overlay, (0, 150, 100), (0, 0, 400, 80), 3)

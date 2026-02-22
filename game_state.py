@@ -1,28 +1,21 @@
-"""
-Центральное состояние игры. Все механики работают через этот модуль.
-"""
 import random
 
-# Константы
 PLAYER_ID = "player"
-CAPTURE_COST = 150  # Ресурсов для захвата сектора
-MINE_COST = 100     # Денег на постройку шахты
-BED_COST = 50       # Денег на постройку грядки
+CAPTURE_COST = 150
+MINE_COST = 100
+BED_COST = 50
 MINE_PRODUCES = {"Камень": (2, 5), "Железная руда": (1, 3), "Уголь": (1, 4)}
 BED_PRODUCES = {"Пшеница": (2, 4), "Морковь": (1, 3), "Картофель": (2, 5)}
 
-# Биомы, на которых можно ставить шахту/грядки
 MINE_BIOMES = ["Горы", "Лес"]
 BED_BIOMES = ["Равнина", "Поле"]
 
-# Соответствие ресурсов для торговли
 RESOURCE_NAMES = {"Coal": "Уголь", "Iron": "Железо", "Iron_ore": "Железная руда", 
                   "Stone": "Камень", "Wood": "Дерево", "Wheat": "Пшеница", 
                   "Carrot": "Морковь", "Potato": "Картофель"}
 
 
 class Country:
-    """Страна — владелец территорий."""
     def __init__(self, country_id: str, name: str):
         self.id = country_id
         self.name = name
@@ -48,7 +41,6 @@ class Country:
                 t.set_owner(None)
 
     def get_bordering_country_ids(self, game_map, all_countries: dict):
-        """Страны, чьи территории граничат с нашими."""
         bordering = set()
         for tid in self.territories:
             t = game_map.get_territory(tid)
@@ -83,7 +75,6 @@ class Country:
 
 
 class GameState:
-    """Глобальное состояние игры."""
     def __init__(self, map_width=8, map_height=8):
         self.map_width = map_width
         self.map_height = map_height
@@ -91,14 +82,12 @@ class GameState:
         self.player_country = None
         self.selected_sector_id = None
         self.game_started = False
-        self.game_map = None  # Заполняется при инициализации карты
+        self.game_map = None
 
     def init_for_map(self, game_map):
-        """Привязка к карте после её создания."""
         self.game_map = game_map
 
     def create_player_country(self, name: str, start_sector_id: int):
-        """Создание страны игрока при выборе стартового сектора."""
         if self.player_country:
             return False
         c = Country(PLAYER_ID, name)
@@ -116,18 +105,15 @@ class GameState:
         )
 
     def can_trade_with(self, country_id: str) -> bool:
-        """Можно ли торговать со страной (граничит с нами)."""
         return country_id in self.get_player_bordering_countries()
 
     def get_adjacent_sectors(self, sector_id: int):
-        """Соседние сектора."""
         t = self.game_map.get_territory(sector_id) if self.game_map else None
         if not t:
             return []
         return t.neighbors
 
     def can_capture_sector(self, sector_id: int) -> tuple[bool, str]:
-        """Можно ли захватить сектор. Возвращает (ok, сообщение)."""
         if not self.player_country or not self.game_map:
             return False, "Игра не начата"
         t = self.game_map.get_territory(sector_id)
@@ -137,10 +123,8 @@ class GameState:
             return False, "Сектор уже ваш"
         if t.owner and t.owner in self.player_country.alliances:
             return False, "Нельзя захватывать союзные территории"
-        # Должен граничить с нашей территорией
         if sector_id not in self.get_adjacent_sectors_to_player():
             return False, "Сектор не граничит с вашей территорией"
-        # Проверка ресурсов (используем баланс как "ресурсы" для простоты)
         if self.player_country.balance < CAPTURE_COST:
             return False, f"Нужно {CAPTURE_COST} ресурсов (баланс: {self.player_country.balance})"
         return True, ""
@@ -158,7 +142,6 @@ class GameState:
         return True, f"Сектор {sector_id} захвачен!"
 
     def get_adjacent_sectors_to_player(self):
-        """ID секторов, соседних с территориями игрока."""
         result = set()
         for tid in self.player_country.territories:
             result.update(self.get_adjacent_sectors(tid))

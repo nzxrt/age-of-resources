@@ -8,8 +8,8 @@ class Territory:
         self.resources = resources
         self.defense = defense
         self.owner = owner
-        self.neighbors = [] # Будет заполняться при создании карты
-        self.custom_data = custom_data # Добавляем новую переменную
+        self.neighbors = []
+        self.custom_data = custom_data
 
     def __repr__(self):
         return f"Territory(ID: {self.id}, Owner: {self.owner}, Def: {self.defense}, Res: {self.resources})"
@@ -23,7 +23,7 @@ class Territory:
 
 class GameMap:
     def __init__(self):
-        self.territories = {} # id -> Territory object
+        self.territories = {}
 
     def add_territory(self, territory):
         self.territories[territory.id] = territory
@@ -57,8 +57,8 @@ class Bot:
         self.id = id
         self.name = name
         self.resources = initial_resources
-        self.territories = []  # Список ID территорий, которыми владеет бот
-        self.alliances = []  # Список ID ботов, с которыми в альянсе
+        self.territories = []
+        self.alliances = []
         self.game_map = game_map
 
     def __repr__(self):
@@ -68,15 +68,15 @@ class Bot:
         if territory_id not in self.territories:
             self.territories.append(territory_id)
             territory = self.game_map.get_territory(territory_id)
-            if territory: # Убедимся, что территория существует
+            if territory:
                 territory.set_owner(self.id)
 
     def remove_territory(self, territory_id):
         if territory_id in self.territories:
             self.territories.remove(territory_id)
             territory = self.game_map.get_territory(territory_id)
-            if territory: # Убедимся, что территория существует
-                territory.set_owner(None) # Делаем территорию нейтральной или передаем новому владельцу
+            if territory:
+                territory.set_owner(None)
 
     def gain_resources(self, amount):
         self.resources += amount
@@ -101,17 +101,14 @@ class Bot:
         return other_bot_id in self.alliances
 
     def choose_territory_to_attack(self):
-        # Ищем вражеские территории, граничащие с нашими
         enemy_territories = self.game_map.get_adjacent_enemy_territories(self.id)
         if not enemy_territories:
-            return None # Нет вражеских территорий для атаки
+            return None
 
-        # Стратегия: атаковать территорию с наименьшей защитой среди соседних вражеских
         target_territory = min(enemy_territories, key=lambda t: t.defense)
         return target_territory
 
     def calculate_attack_power(self):
-        # Пример: сила атаки зависит от количества ресурсов и случайного множителя
         return self.resources // 10 + random.randint(1, 10)
 
     def attack_territory(self, target_territory_id, all_bots):
@@ -127,31 +124,28 @@ class Bot:
         attacker_power = self.calculate_attack_power()
         defender_power = target_territory.defense
 
-        # Бонус к атаке от альянсов
         for ally_id in self.alliances:
-            ally_bot = all_bots.get(ally_id) # Получаем объект бота-союзника
-            if ally_bot: # Убедимся, что бот существует
-                # Проверяем, граничат ли территории союзника с атакуемой
+            ally_bot = all_bots.get(ally_id)
+            if ally_bot:
                 for ally_territory_id in ally_bot.territories:
                     ally_territory = self.game_map.get_territory(ally_territory_id)
                     if ally_territory and target_territory.id in ally_territory.neighbors:
-                        attacker_power += ally_bot.resources // 20 # Примерный бонус от союзника
+                        attacker_power += ally_bot.resources // 20
                         print(f"Бонус к атаке от союзника {ally_bot.name}")
-                        break # Один бонус от одного союзника
+                        break
 
-        # Бонус к защите от альянсов (если у защищающегося есть владелец и он в альянсе)
-        if target_territory.owner and all_bots.get(target_territory.owner): # Убедимся, что владелец есть и это бот
+        if target_territory.owner and all_bots.get(target_territory.owner):
             defender_bot = all_bots[target_territory.owner]
-            defender_power += (defender_bot.resources // 15) # Базовый бонус от ресурсов защищающегося
+            defender_power += (defender_bot.resources // 15)
             for ally_id in defender_bot.alliances:
                 ally_bot = all_bots.get(ally_id)
-                if ally_bot: # Убедимся, что бот существует
+                if ally_bot:
                     for ally_territory_id in ally_bot.territories:
                         ally_territory = self.game_map.get_territory(ally_territory_id)
                         if ally_territory and target_territory.id in ally_territory.neighbors:
-                            defender_power += ally_bot.resources // 20 # Примерный бонус от союзника
+                            defender_power += ally_bot.resources // 20
                             print(f"Бонус к защите от союзника {ally_bot.name}")
-                            break # Один бонус от одного союзника
+                            break
 
         print(f"{self.name} атакует территорию {target_territory.id} (Владелец: {target_territory.owner}). Сила атаки: {attacker_power}, Сила защиты: {defender_power}")
 
@@ -160,20 +154,19 @@ class Bot:
             if target_territory.owner:
                 all_bots[target_territory.owner].remove_territory(target_territory.id)
             self.add_territory(target_territory.id)
-            # Тратим ресурсы на атаку
-            self.spend_resources(attacker_power // 2) # Примерное потребление ресурсов
+            self.spend_resources(attacker_power // 2)
             return True
         else:
             print(f"{self.name} не смог захватить территорию {target_territory.id}.")
-            self.spend_resources(attacker_power) # Тратим ресурсы независимо от исхода
+            self.spend_resources(attacker_power)
             return False
 
     def reinforce_territory(self, territory_id):
         territory = self.game_map.get_territory(territory_id)
         if territory and territory.owner == self.id:
-            cost = 10 # Примерная стоимость усиления защиты
+            cost = 10
             if self.spend_resources(cost):
-                territory.defense += 5 # Увеличиваем защиту
+                territory.defense += 5
                 print(f"{self.name} усилил защиту территории {territory_id}. Новая защита: {territory.defense}")
                 return True
             print(f"{self.name} не хватает ресурсов для усиления территории {territory_id}.")
@@ -182,7 +175,6 @@ class Bot:
         return False
 
     def choose_territory_to_reinforce(self):
-        # Ищем свои территории, граничащие с вражескими
         threatened_territories = []
         for owned_t_id in self.territories:
             owned_t = self.game_map.get_territory(owned_t_id)
@@ -190,24 +182,20 @@ class Bot:
                 for neighbor_id in owned_t.neighbors:
                     neighbor_t = self.game_map.get_territory(neighbor_id)
                     if neighbor_t and neighbor_t.owner != self.id and neighbor_t.owner is not None:
-                        threatened_territories.append(owned_t) # Эта территория граничит с врагом
-                        break # Достаточно одного врага
+                        threatened_territories.append(owned_t)
+                        break
 
         if not threatened_territories:
-            # Если нет прямо угрожаемых территорий, выбираем свою с наименьшей защитой
             if self.territories:
                 all_owned_territories = [self.game_map.get_territory(t_id) for t_id in self.territories if self.game_map.get_territory(t_id)]
                 if all_owned_territories:
                     return min(all_owned_territories, key=lambda t: t.defense).id
             return None
 
-        # Из угрожаемых выбираем ту, у которой наименьшая защита
         target_territory = min(threatened_territories, key=lambda t: t.defense)
         return target_territory.id
 
     def make_move(self, all_bots):
-        # Бот принимает решение: атаковать или усилить защиту
-        # Здесь очень простая логика для примера
         action = random.choice(["attack", "reinforce", "propose_alliance"])
 
         if action == "attack":
@@ -216,7 +204,6 @@ class Bot:
                 self.attack_territory(target.id, all_bots)
             else:
                 print(f"{self.name} хотел атаковать, но не нашел цель.")
-                # Если нечего атаковать, пробуем усилить защиту
                 target_reinforce = self.choose_territory_to_reinforce()
                 if target_reinforce:
                     self.reinforce_territory(target_reinforce)
@@ -227,13 +214,11 @@ class Bot:
                 self.reinforce_territory(target)
             else:
                 print(f"{self.name} хотел усилить, но не нашел цель.")
-                # Если нечего усиливать, пробуем атаковать
                 target_attack = self.choose_territory_to_attack()
                 if target_attack:
                     self.attack_territory(target_attack.id, all_bots)
 
         elif action == "propose_alliance":
-            # Выбираем случайного бота, с которым еще не в альянсе
             possible_allies = [bot_id for bot_id in all_bots if bot_id != self.id and bot_id not in self.alliances]
             if possible_allies:
                 target_bot_id = random.choice(possible_allies)
@@ -251,9 +236,7 @@ class Bot:
             print(f"{other_bot.name} отклонил предложение альянса от {self.name}")
 
     def respond_to_alliance_proposal(self, proposing_bot, all_bots):
-        # Простая логика принятия альянса: принимаем, если у нас меньше 2х альянсов
-        # и предлагающий бот не наш враг (пока нет понятия врагов, но можно добавить)
-        if len(self.alliances) < 2: # Пример: не больше 2х альянсов
+        if len(self.alliances) < 2:
             print(f"{self.name} принимает предложение альянса от {proposing_bot.name}")
             return True
         print(f"{self.name} отклоняет предложение альянса от {proposing_bot.name}")
@@ -264,8 +247,8 @@ class Game:
         self.game_map = GameMap()
         self.bots = {}
         self.current_turn = 0
-        self.map_width = map_width  # Добавляем ширину карты
-        self.map_height = map_height # Добавляем высоту карты
+        self.map_width = map_width
+        self.map_height = map_height
         self._initialize_map(map_width, map_height)
         self._initialize_bots(num_bots)
         self._assign_initial_territories()
@@ -273,7 +256,6 @@ class Game:
     def _initialize_map(self, width, height): 
         print("Инициализация карты...")
         territory_id = 0
-        # Ручные назначения биомов для конкретных ID территорий
         manual_biome_assignments = {
             25: "Пустыня", 33: "Пустыня", 34: "Пустыня", 35: "Пустыня",
             36: "Пустыня", 37: "Пустыня", 29: "Пустыня", 22: "Пустыня",
@@ -294,22 +276,15 @@ class Game:
             for x in range(width):
                 resources = random.randint(5, 20)
                 defense = random.randint(0, 5)
-                
-                # Присваиваем биом на основе ручных назначений, если есть, иначе - "Равнина"
                 chosen_biome = manual_biome_assignments.get(territory_id, "Равнина")
-
-                # Присваиваем уникальное свойство custom_data каждому сектору
-                # Теперь custom_data - это словарь, содержащий биом и другие потенциальные свойства
                 custom_data_for_sector = {"biome": chosen_biome, "sector_name": f"Sector {territory_id}"}
                 territory = Territory(territory_id, x, y, resources, defense, custom_data=custom_data_for_sector)
                 self.game_map.add_territory(territory)
                 territory_id += 1
 
-        #соседи
         for y in range(height):
             for x in range(width):
                 current_id = y * width + x
-                # Соседи по горизонтали и вертикали
                 if x > 0: self.game_map.connect_territories(current_id, y * width + (x - 1))
                 if x < width - 1: self.game_map.connect_territories(current_id, y * width + (x + 1))
                 if y > 0: self.game_map.connect_territories(current_id, (y - 1) * width + x)
@@ -339,7 +314,6 @@ class Game:
                     territory_id = all_territories_ids.pop(0)
                     self.bots[bot_id].add_territory(territory_id)
 
-        # Оставшиеся территории (если есть) остаются нейтральными
         print("Начальные территории назначены.")
 
     def _update_resources(self):
@@ -347,15 +321,14 @@ class Game:
             for territory_id in bot.territories:
                 territory = self.game_map.get_territory(territory_id)
                 if territory:
-                    bot.gain_resources(territory.resources) # Бонус ресурсов от каждой территории
+                    bot.gain_resources(territory.resources)
 
     def run_turn(self):
         self.current_turn += 1
         print(f"\n--- Ход {self.current_turn} ---")
         self._update_resources()
 
-        # Боты делают свои ходы
-        for bot_id in list(self.bots.keys()): # Создаем копию списка ключей, если боты могут быть удалены
+        for bot_id in list(self.bots.keys()):
             bot = self.bots.get(bot_id)
             if bot:
                 bot.make_move(self.bots)
@@ -386,7 +359,6 @@ class Game:
 
 
 def create_map_for_player(width: int, height: int):
-    """Создаёт карту для режима игрока: все сектора нейтральны, биомы по позиции."""
     game_map = GameMap()
     territory_id = 0
     biomes = ["Равнина", "Поле", "Горы", "Лес", "Море"]
@@ -394,12 +366,11 @@ def create_map_for_player(width: int, height: int):
         for x in range(width):
             resources = random.randint(5, 20)
             defense = random.randint(0, 3)
-            # Биом по позиции: края — море, центр — смешанные
             if x == 0 or x == width - 1 or y == 0 or y == height - 1:
                 chosen_biome = "Море"
             else:
                 idx = (x * 7 + y * 11 + territory_id) % 4
-                chosen_biome = biomes[idx]  # Равнина, Поле, Горы, Лес
+                chosen_biome = biomes[idx]
             custom_data = {"biome": chosen_biome, "sector_name": f"Sector {territory_id}"}
             territory = Territory(territory_id, x, y, resources, defense, custom_data=custom_data)
             game_map.add_territory(territory)
@@ -419,5 +390,5 @@ def create_map_for_player(width: int, height: int):
 
 
 if __name__ == "__main__":
-    game = Game(num_bots=3, map_width=4, map_height=4)                #Изменить данные
+    game = Game(num_bots=3, map_width=4, map_height=4)
     game.run_game(turns=5)

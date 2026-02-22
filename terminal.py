@@ -1,4 +1,3 @@
-"""Консольный режим игры. Запуск: python terminal.py"""
 from function import (
     sell_resource, buy_resource, zone, government,
     war, show_war, end_war, logistic, country_select,
@@ -6,7 +5,6 @@ from function import (
 )
 from data import balance, inventory, country
 
-# Основной игровой цикл (консольный)
 while True:
     try:
         command = input('-> ').strip()

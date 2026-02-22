@@ -1,7 +1,3 @@
-"""
-Игровые функции для консольного режима (terminal.py).
-Использует данные из data.py. Для графического режима с картой — main_game.py.
-"""
 from data import (
     balance, inventory, farm_zone, available_farm_zone,
     culture_for_farm, available_culture_for_farm,
@@ -12,12 +8,10 @@ from data import (
 )
 from random_1 import sell_or_not
 
-# Текущая страна игрока (для консольного режима)
 current_country = None
 
 
 def sell_resource(bordering_countries=None):
-    """Продажа ресурсов. bordering_countries — список ID стран для торговли (если есть карта)."""
     global balance, inventory
 
     name = input("Название товара для продажи: -> ")
@@ -58,7 +52,6 @@ def sell_resource(bordering_countries=None):
 
 
 def buy_resource(bordering_countries=None):
-    """Покупка ресурсов."""
     global balance, inventory
 
     name = input("Название товара для покупки: -> ")
@@ -237,7 +230,6 @@ def show_war():
 
 
 def end_war():
-    """Завершить войну."""
     global in_war
     from data import country
     if not in_war:
@@ -280,7 +272,6 @@ def logistic():
 
 
 def country_select():
-    """Выбор страны (для консольного режима)."""
     global current_country
     from data import country
     print(f"Доступные страны: {country}")
@@ -293,7 +284,6 @@ def country_select():
 
 
 def form_alliance():
-    """Заключить союз."""
     import data
     from data import country
     if not hasattr(data, "alliances"):
@@ -311,7 +301,6 @@ def form_alliance():
 
 
 def break_alliance():
-    """Расторгнуть союз."""
     import data
     allies = data.alliances if hasattr(data, "alliances") else []
     if not allies:
