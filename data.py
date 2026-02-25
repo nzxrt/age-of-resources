@@ -1,6 +1,6 @@
 from tabulate import tabulate
 
-balance = 15000
+balance = 1000
 inventory = {}
 
 farm_zone = ["Равнина", "Поле", "Ферма"]
