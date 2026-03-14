@@ -82,6 +82,54 @@ def extract_and_update_repo(zip_data: BytesIO) -> bool:
             print("Не удалось определить корневую папку в архиве.")
             return False
 
+        
+        expected_files: set[str] = set()
+        for root, dirs, files in os.walk(src_root):
+            rel_dir = os.path.relpath(root, src_root)
+            if rel_dir == ".":
+                rel_dir = ""
+            for filename in files:
+                rel_path = os.path.normpath(os.path.join(rel_dir, filename))
+                expected_files.add(rel_path)
+
+        
+        print("Удаляю устаревшие файлы...")
+        for root, dirs, files in os.walk(current_dir):
+            rel_dir = os.path.relpath(root, current_dir)
+            if rel_dir == ".":
+                rel_dir = ""
+            for filename in files:
+                if filename == launcher_name:
+                    continue
+                rel_path = os.path.normpath(os.path.join(rel_dir, filename))
+                # Корни для исключений/проверок в assets
+                saves_root = os.path.normpath(os.path.join("assets", "saves"))
+                textures_root = os.path.normpath(os.path.join("assets", "textures"))
+                assets_root = os.path.normpath("assets")
+
+                # Не трогаем сейвы игрока
+                saves_root = os.path.normpath(os.path.join("assets", "saves"))
+                if rel_path == saves_root or rel_path.startswith(saves_root + os.sep):
+                    continue
+
+                # Внутри assets проверяем и чистим только то, что лежит в assets/textures;
+                # остальные подпапки (кроме saves выше) не трогаем.
+                if rel_path.startswith(assets_root + os.sep) and not (
+                    rel_path == textures_root
+                    or rel_path.startswith(textures_root + os.sep)
+                    or rel_path == saves_root
+                    or rel_path.startswith(saves_root + os.sep)
+                ):
+                    continue
+
+                if rel_path not in expected_files:
+                    full_path = os.path.join(root, filename)
+                    try:
+                        os.remove(full_path)
+                        print(f"Удалён файл: {rel_path}")
+                    except OSError as e:
+                        print(f"Не удалось удалить {rel_path}: {e}")
+
         print("Обновляю файлы игры...")
         for root, dirs, files in os.walk(src_root):
             rel_dir = os.path.relpath(root, src_root)
@@ -120,10 +168,10 @@ def update_if_needed() -> None:
         return
 
     if local_version == remote_version:
-        print("У тебя уже установлена последняя версия.")
-        return
+        print("Версия совпадает. Синхронизирую файлы с репозиторием...")
+    else:
+        print("Доступна новая версия. Начинаю обновление и синхронизацию файлов...")
 
-    print("Доступна новая версия. Начинаю обновление...")
     zip_data = download_latest_zip()
     if zip_data is None:
         print("Не удалось скачать обновление.")
