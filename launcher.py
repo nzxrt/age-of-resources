@@ -66,70 +66,31 @@ def extract_and_update_repo(zip_data: BytesIO) -> bool:
         with ZipFile(zip_data) as zf:
             zf.extractall(tmp_dir)
 
-        root_entries = [
-            name
-            for name in zf.namelist()
-            if name.endswith("/") and name.count("/") == 1
-        ]
-        if root_entries:
-            root_folder = root_entries[0].split("/", 1)[0]
-        else:
-            
-            root_folder = os.path.commonprefix(zf.namelist()).split("/", 1)[0]
+            root_entries = [
+                name
+                for name in zf.namelist()
+                if name.endswith("/") and name.count("/") == 1
+            ]
+            if root_entries:
+                root_folder = root_entries[0].split("/", 1)[0]
+            else:
+                # запасной вариант — общий префикс
+                root_folder = os.path.commonprefix(zf.namelist()).split("/", 1)[0]
 
         src_root = os.path.join(tmp_dir, root_folder)
         if not os.path.isdir(src_root):
             print("Не удалось определить корневую папку в архиве.")
             return False
 
-        
-        expected_files: set[str] = set()
+        # считаем общее количество файлов, чтобы показать прогресс
+        total_files = 0
         for root, dirs, files in os.walk(src_root):
-            rel_dir = os.path.relpath(root, src_root)
-            if rel_dir == ".":
-                rel_dir = ""
-            for filename in files:
-                rel_path = os.path.normpath(os.path.join(rel_dir, filename))
-                expected_files.add(rel_path)
-
-        
-        print("Удаляю устаревшие файлы...")
-        for root, dirs, files in os.walk(current_dir):
-            rel_dir = os.path.relpath(root, current_dir)
-            if rel_dir == ".":
-                rel_dir = ""
-            for filename in files:
-                if filename == launcher_name:
-                    continue
-                rel_path = os.path.normpath(os.path.join(rel_dir, filename))
-                
-                saves_root = os.path.normpath(os.path.join("assets", "saves"))
-                textures_root = os.path.normpath(os.path.join("assets", "textures"))
-                assets_root = os.path.normpath("assets")
-
-                
-                saves_root = os.path.normpath(os.path.join("assets", "saves"))
-                if rel_path == saves_root or rel_path.startswith(saves_root + os.sep):
-                    continue
-
-                
-                if rel_path.startswith(assets_root + os.sep) and not (
-                    rel_path == textures_root
-                    or rel_path.startswith(textures_root + os.sep)
-                    or rel_path == saves_root
-                    or rel_path.startswith(saves_root + os.sep)
-                ):
-                    continue
-
-                if rel_path not in expected_files:
-                    full_path = os.path.join(root, filename)
-                    try:
-                        os.remove(full_path)
-                        print(f"Удалён файл: {rel_path}")
-                    except OSError as e:
-                        print(f"Не удалось удалить {rel_path}: {e}")
+            total_files += len(files)
 
         print("Обновляю файлы игры...")
+        copied_files = 0
+        bar_width = 30
+
         for root, dirs, files in os.walk(src_root):
             rel_dir = os.path.relpath(root, src_root)
             if rel_dir == ".":
@@ -145,8 +106,19 @@ def extract_and_update_repo(zip_data: BytesIO) -> bool:
                 src_path = os.path.join(root, filename)
                 dest_path = os.path.join(dest_dir, filename)
 
-                
+                # Перезаписываем файл
                 shutil.copy2(src_path, dest_path)
+
+                # обновляем прогресс-бар
+                copied_files += 1
+                if total_files > 0:
+                    progress = copied_files / total_files
+                    filled = int(bar_width * progress)
+                    bar = "█" * filled + "-" * (bar_width - filled)
+                    print(f"\r[{bar}] {int(progress * 100)}%", end="", flush=True)
+
+        if total_files > 0:
+            print()  # перенос строки после прогресс-бара
 
         print("Обновление файлов завершено.")
         return True
@@ -167,10 +139,10 @@ def update_if_needed() -> None:
         return
 
     if local_version == remote_version:
-        print("Версия совпадает. Синхронизирую файлы с репозиторием...")
-    else:
-        print("Доступна новая версия. Начинаю обновление и синхронизацию файлов...")
+        print("У тебя уже установлена последняя версия.")
+        return
 
+    print("Доступна новая версия. Начинаю обновление...")
     zip_data = download_latest_zip()
     if zip_data is None:
         print("Не удалось скачать обновление.")
