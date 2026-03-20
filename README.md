@@ -18,6 +18,14 @@ Age Of Resource - игровой проект, политическая стра
 8. **Союзы [A]**: Список стран — выбери ↑↓, Enter заключить/расторгнуть союз
 9. **Сохранение:** F5
 
+## 🐍 Вклад в Age of Resources
 
+<div align="center">
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/ELC-901/age-of-resources/output/github-contribution-grid-snake-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/ELC-901/age-of-resources/output/github-contribution-grid-snake.svg">
+  <img alt="🐍 Snake eating contributions" src="https://raw.githubusercontent.com/ELC-901/age-of-resources/output/github-contribution-grid-snake.svg">
+</picture>
 
+</div>
