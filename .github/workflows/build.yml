@@ -1,11 +1,13 @@
-name: Build Age of Resources EXE
+name: Build Age of Resources EXE and Release
 
 on:
   push:
     branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
-  workflow_dispatch:  # позволяет запускать вручную
+  workflow_dispatch:  # можно запускать вручную
+  release:
+    types: [created]   # срабатывает при создании релиза
 
 jobs:
   build:
@@ -27,11 +29,18 @@ jobs:
 
     - name: Build EXE with PyInstaller
       run: |
-        # Важно: флаг --add-data добавляет папку assets внутрь EXE
         pyinstaller --onefile --name "AgeOfResources" --add-data "assets;assets" run.py
 
-    - name: Upload artifact
+    - name: Upload EXE as artifact (for testing)
       uses: actions/upload-artifact@v4
       with:
         name: AgeOfResources
         path: dist/AgeOfResources.exe
+
+    - name: Upload EXE to Release (if release was created)
+      if: github.event_name == 'release'
+      uses: softprops/action-gh-release@v2
+      with:
+        files: dist/AgeOfResources.exe
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
